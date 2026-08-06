@@ -35,10 +35,8 @@ class LocationService {
     // 3. Read position
     try {
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 20),
-        ),
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 20),
       );
       return LocationResult(true, "OK", pos);
     } catch (e) {
