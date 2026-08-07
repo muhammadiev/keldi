@@ -19,7 +19,7 @@ class ApiService {
   ///  - iOS simulator    : http://127.0.0.1:8000
   ///  - Real device      : http://<computer-LAN-IP>:8000
   ///  - Production        : https://school.ontest.uz
-  static const String defaultBaseUrl = 'http://10.0.2.2:8000';
+  static const String defaultBaseUrl = 'https://school.ontest.uz/';
 
   static Future<String> _base() async =>
       (await Storage.baseUrl) ?? defaultBaseUrl;
