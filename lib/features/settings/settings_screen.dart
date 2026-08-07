@@ -22,7 +22,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
       appBar: AppBar(title: const Text('Sozlamalar')),
       body: ContentContainer(
         child: ListView(

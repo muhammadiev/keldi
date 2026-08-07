@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/app_state.dart';
@@ -25,6 +28,7 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
   late DateTime _date;
   SchoolRef? _school;
   bool _submitting = false;
+  String? _attachmentPath;
 
   @override
   void initState() {
@@ -37,6 +41,36 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
   void dispose() {
     _reasonCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAttachment() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Kamera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Galereya'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 70);
+      if (picked != null) setState(() => _attachmentPath = picked.path);
+    } catch (e) {
+      if (mounted) showSnack(context, 'Rasm tanlanmadi: $e', color: AppColors.warning);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -56,6 +90,7 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
       targetDate: DateFormat('yyyy-MM-dd').format(_date),
       reason: _reasonCtrl.text.trim(),
       schoolId: _school?.id,
+      attachmentPath: _attachmentPath,
     );
     if (!mounted) return;
     setState(() => _submitting = false);
@@ -120,6 +155,58 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
                     ? 'Sababni batafsil yozing'
                     : null,
               ),
+              const SizedBox(height: 16),
+
+              // Attachment (proof) — optional
+              Text('Dalil (ixtiyoriy)',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              const SizedBox(height: 8),
+              if (_attachmentPath != null)
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        File(_attachmentPath!),
+                        height: 160,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: InkWell(
+                        onTap: () => setState(() => _attachmentPath = null),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close,
+                              color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: _pickAttachment,
+                  icon: const Icon(Icons.attach_file),
+                  label: const Text('Rasm biriktirish'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    foregroundColor: AppColors.brand,
+                    side: const BorderSide(color: AppColors.brand),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _submitting ? null : _submit,

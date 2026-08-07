@@ -19,7 +19,7 @@ class ApiService {
   ///  - iOS simulator    : http://127.0.0.1:8000
   ///  - Real device      : http://<computer-LAN-IP>:8000
   ///  - Production        : https://school.ontest.uz
-  static const String defaultBaseUrl = 'https://school.ontest.uz/';
+  static const String defaultBaseUrl = 'http://10.0.2.2:8000';
 
   static Future<String> _base() async =>
       (await Storage.baseUrl) ?? defaultBaseUrl;
@@ -191,20 +191,38 @@ class ApiService {
     required String targetDate, // YYYY-MM-DD
     required String reason,
     int? schoolId,
+    String? attachmentPath, // optional proof file/photo
   }) async {
     try {
       final base = await _base();
-      final res = await http
-          .post(
-            _uri(base, '/api/ariza/submit/'),
-            headers: await _headers(),
-            body: jsonEncode({
-              'target_date': targetDate,
-              'reason': reason,
-              if (schoolId != null) 'school': schoolId,
-            }),
-          )
-          .timeout(_timeout);
+      final uri = _uri(base, '/api/ariza/submit/');
+      final http.Response res;
+
+      if (attachmentPath != null && attachmentPath.isNotEmpty) {
+        // multipart upload (file + fields)
+        final token = await Storage.token;
+        final req = http.MultipartRequest('POST', uri);
+        if (token != null) req.headers['Authorization'] = 'Token $token';
+        req.fields['target_date'] = targetDate;
+        req.fields['reason'] = reason;
+        if (schoolId != null) req.fields['school'] = schoolId.toString();
+        req.files.add(await http.MultipartFile.fromPath('attachment', attachmentPath));
+        final streamed = await req.send().timeout(_timeout);
+        res = await http.Response.fromStream(streamed);
+      } else {
+        res = await http
+            .post(
+              uri,
+              headers: await _headers(),
+              body: jsonEncode({
+                'target_date': targetDate,
+                'reason': reason,
+                if (schoolId != null) 'school': schoolId,
+              }),
+            )
+            .timeout(_timeout);
+      }
+
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       if (res.statusCode == 201 && body['success'] == true) {
         return ApiResult(true, body['message']?.toString() ?? 'Yuborildi');

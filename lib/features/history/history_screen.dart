@@ -187,6 +187,13 @@ class _RecordCard extends StatelessWidget {
   final AttendanceRecord record;
   const _RecordCard({required this.record});
 
+  static const _months = [
+    'Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn',
+    'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'
+  ];
+  String _dd(DateTime d) => d.day.toString().padLeft(2, '0');
+  String _mon(DateTime d) => _months[(d.month - 1) % 12];
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -212,12 +219,12 @@ class _RecordCard extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text(d != null ? DateFormat('dd').format(d) : '--',
+                Text(d != null ? _dd(d) : '--',
                     style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
                         color: AppColors.brand)),
-                Text(d != null ? DateFormat('MMM').format(d) : '',
+                Text(d != null ? _mon(d) : '',
                     style: TextStyle(
                         fontSize: 11, color: scheme.onSurfaceVariant)),
               ],
