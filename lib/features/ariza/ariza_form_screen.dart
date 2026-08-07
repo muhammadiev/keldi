@@ -108,12 +108,11 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Yangi ariza'), centerTitle: true),
-      body: ContentContainer(
-        maxWidth: 560,
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
               const SizedBox(height: 4),
               InkWell(
                 onTap: _pickDate,
@@ -221,7 +220,6 @@ class _ArizaFormScreenState extends State<ArizaFormScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

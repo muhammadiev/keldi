@@ -23,10 +23,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sozlamalar')),
-      body: ContentContainer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
             // Profile header
             AppCard(
               child: Row(
@@ -106,7 +105,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
     );
   }
 

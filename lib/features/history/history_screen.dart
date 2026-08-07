@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/responsive.dart';
 import '../../core/theme.dart';
@@ -66,14 +65,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             icon: Icons.inbox_outlined,
                             title: 'Davomat yozuvlari yo\u2019q'),
                       ])
-                    : ContentContainer(child: _body(context)),
+                    : _body(context),
       ),
     );
   }
 
   Widget _body(BuildContext context) {
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.all(16),
       children: [
         _WeeklyChart(records: _records),
         const SizedBox(height: 8),

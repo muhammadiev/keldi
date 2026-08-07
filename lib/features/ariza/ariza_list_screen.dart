@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/responsive.dart';
-import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../services/api_service.dart';
 import '../../widgets/ui.dart';
@@ -51,8 +50,8 @@ class _ArizaListScreenState extends State<ArizaListScreen> {
         onRefresh: _load,
         child: _loading
             ? const Center(child: CircularProgressIndicator())
-            : ContentContainer(
-                child: ListView(
+            : ListView(
+                  padding: const EdgeInsets.all(16),
                   children: [
                     FilledButton.icon(
                       onPressed: _newAriza,
@@ -81,7 +80,6 @@ class _ArizaListScreenState extends State<ArizaListScreen> {
                     const SizedBox(height: 16),
                   ],
                 ),
-              ),
       ),
     );
   }
