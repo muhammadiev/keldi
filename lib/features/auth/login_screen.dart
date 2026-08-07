@@ -4,7 +4,8 @@ import '../../core/app_state.dart';
 import '../../core/theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/ui.dart';
-import '../shell/app_shell.dart';
+import '../home/home_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,10 +47,28 @@ class _LoginScreenState extends State<LoginScreen> {
     if (res.ok) {
       AppState.instance.setUser(res.data);
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AppShell()),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else {
       setState(() => _error = res.message);
+    }
+  }
+
+  Future<void> _openTelegram() async {
+    // Try the Telegram app first, then fall back to the web link.
+    final tgApp = Uri.parse('tg://resolve?domain=JahongirxonKosoniy');
+    final tgWeb = Uri.parse('https://t.me/JahongirxonKosoniy');
+    try {
+      if (await canLaunchUrl(tgApp)) {
+        await launchUrl(tgApp);
+      } else {
+        await launchUrl(tgWeb, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (mounted) {
+        showSnack(context, 'Telegram ochilmadi: @JahongirxonKosoniy',
+            color: AppColors.warning);
+      }
     }
   }
 
@@ -174,7 +193,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             )
                           : const Text('Kirish'),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: _openTelegram,
+                      icon: const Icon(Icons.telegram, size: 20),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.brand,
+                      ),
+                      label: const Text('Login yoki parolni unutdingizmi?'),
+                    ),
+                    const SizedBox(height: 12),
                     Text(
                       'Demo: teacher1 / demo12345',
                       textAlign: TextAlign.center,

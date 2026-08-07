@@ -7,12 +7,8 @@ import 'app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Locale data for date formatting (safe defaults).
   await initializeDateFormatting();
-
   await AppState.instance.load();
   final loggedIn = (await Storage.token) != null;
-
   runApp(KeldimApp(initiallyLoggedIn: loggedIn));
 }

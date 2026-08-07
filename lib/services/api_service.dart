@@ -131,6 +131,40 @@ class ApiService {
     }
   }
 
+  /// KETDIM — records leaving time. Same response shape as markArrival.
+  static Future<ApiResult<Map<String, dynamic>>> markDeparture({
+    required double latitude,
+    required double longitude,
+    String notes = '',
+  }) async {
+    try {
+      final base = await _base();
+      final res = await http
+          .post(
+            _uri(base, '/api/attendance/mark-departure/'),
+            headers: await _headers(),
+            body: jsonEncode({
+              'latitude': latitude,
+              'longitude': longitude,
+              'notes': notes,
+            }),
+          )
+          .timeout(_timeout);
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      final ok = res.statusCode == 200 && body['success'] == true;
+      final record = body['record'] as Map<String, dynamic>?;
+      return ApiResult(ok, body['message']?.toString() ?? 'Xatolik', {
+        'distance': body['distance'],
+        'arrived': record?['arrived_at'],
+        'left': record?['left_at'],
+      });
+    } on TimeoutException {
+      return const ApiResult(false, 'Server javob bermadi (timeout)');
+    } catch (e) {
+      return ApiResult(false, "Serverga ulanib bo'lmadi: $e");
+    }
+  }
+
   static Future<ApiResult<List<AttendanceRecord>>> attendanceHistory() async {
     try {
       final base = await _base();

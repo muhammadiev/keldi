@@ -16,9 +16,20 @@ dependencies:
   geolocator: ^12.0.0          # GPS. NOTE: this version uses LocationSettings.
   shared_preferences: ^2.3.2   # token + theme persistence
   intl: ^0.19.0                # date formatting
+  url_launcher: ^6.3.0         # open Telegram / external links
 
 dev_dependencies:
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon_1024.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_foreground: "assets/icon/adaptive_foreground_1024.png"
+  adaptive_icon_background: "#7C3AED"
