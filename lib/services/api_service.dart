@@ -19,7 +19,7 @@ class ApiResult {
 ///   - Production        : https://school.ontest.uz
 class ApiService {
   // TODO: change this to match where your Django server runs.
-  static const String baseUrl = "http://10.0.2.2:8000";
+  static const String baseUrl = "https://school.ontest.uz";
 
   static const String _tokenKey = "auth_token";
   static const String _roleKey = "role";
