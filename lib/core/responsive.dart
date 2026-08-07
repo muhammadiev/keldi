@@ -37,10 +37,13 @@ extension ResponsiveContext on BuildContext {
 }
 
 /// Centers content and caps its width on large screens.
+///
+/// Implemented with plain [Padding] (not Center/ConstrainedBox) so it is safe
+/// to wrap a scrolling ListView — a Center around a ListView collapses it.
 class ContentContainer extends StatelessWidget {
   final Widget child;
   final double maxWidth;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsets padding;
 
   const ContentContainer({
     super.key,
@@ -51,11 +54,15 @@ class ContentContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: Padding(padding: padding, child: child),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final extra = (w.isFinite && w > maxWidth) ? (w - maxWidth) / 2 : 0.0;
+        return Padding(
+          padding: EdgeInsets.only(left: extra, right: extra) + padding,
+          child: child,
+        );
+      },
     );
   }
 }
