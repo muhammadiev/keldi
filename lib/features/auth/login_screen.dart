@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+
+import '../../core/app_state.dart';
+import '../../core/theme.dart';
 import '../../services/api_service.dart';
-import '../home/admin_home.dart';
-import '../home/home.dart'; // or your home screen import
+import '../../widgets/ui.dart';
+import '../shell/app_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,177 +14,182 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _loginController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isLoading = false;
-  String? _errorMessage;
+  final _formKey = GlobalKey<FormState>();
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _loading = false;
+  bool _obscure = true;
+  String? _error;
 
-  Future<void> _login() async {
-    final login = _loginController.text.trim();
-    final password = _passwordController.text.trim();
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
 
-    if (login.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = "Login va parolni kiriting");
-      return;
-    }
-
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _loading = true;
+      _error = null;
     });
 
-    // Real login against the Django backend
-    final result = await ApiService.login(login, password);
+    final res = await ApiService.login(
+      _userCtrl.text.trim(),
+      _passCtrl.text.trim(),
+    );
 
     if (!mounted) return;
-    setState(() => _isLoading = false);
+    setState(() => _loading = false);
 
-    if (result.success) {
-      final role = (result.data is Map) ? result.data["role"] : "teacher";
-      final target = (role == "admin")
-          ? const AdminHomeScreen()
-          : const HomeScreen();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => target),
+    if (res.ok) {
+      AppState.instance.setUser(res.data);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AppShell()),
       );
     } else {
-      setState(() => _errorMessage = result.message);
+      setState(() => _error = res.message);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0D0617) : const Color(0xFFFAF8FF);
-    final cardColor = isDark ? const Color(0xFF1C1430) : Colors.white;
-    final textColor = isDark ? const Color(0xFFDFD4FF) : const Color(0xFF2A1845);
-    final lavender = isDark ? const Color(0xFFCC99FF) : const Color(0xFFB794F4);
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: bgColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.school_rounded,
-                  size: 80,
-                  color: lavender,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  "Keldim / Ketdim",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Xodimlar uchun tizimga kirish",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: textColor.withOpacity(0.7),
-                  ),
-                ),
-                const SizedBox(height: 48),
-
-                // Login field
-                TextField(
-                  controller: _loginController,
-                  decoration: InputDecoration(
-                    labelText: "Login",
-                    prefixIcon: Icon(Icons.person, color: lavender),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo mark
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.brandGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.brand.withOpacity(0.4),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.school_rounded,
+                          color: Colors.white, size: 38),
                     ),
-                    filled: true,
-                    fillColor: cardColor,
-                  ),
-                  textInputAction: TextInputAction.next,
-                ),
-                const SizedBox(height: 16),
-
-                // Password field
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "Parol",
-                    prefixIcon: Icon(Icons.lock, color: lavender),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: cardColor,
-                  ),
-                  onSubmitted: (_) => _login(),
-                ),
-                const SizedBox(height: 12),
-
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ),
-
-                // Login button
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: FilledButton(
-                    onPressed: _isLoading ? null : _login,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: lavender,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Keldim',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        color: scheme.onSurface,
                       ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    )
-                        : const Text(
-                      "Kirish",
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Davomat tizimiga kiring',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
                     ),
-                  ),
-                ),
+                    const SizedBox(height: 32),
 
-                const SizedBox(height: 40),
-                Text(
-                  "Demo (backend):\nteacher1 / demo12345    (o‘qituvchi)",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: textColor.withOpacity(0.6),
-                    fontSize: 13,
-                  ),
+                    if (_error != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: AppColors.danger, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: const TextStyle(
+                                    color: AppColors.danger, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    TextFormField(
+                      controller: _userCtrl,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Login',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Login kiriting' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passCtrl,
+                      obscureText: _obscure,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
+                      decoration: InputDecoration(
+                        labelText: 'Parol',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined),
+                          onPressed: () =>
+                              setState(() => _obscure = !_obscure),
+                        ),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Parol kiriting'
+                          : null,
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton(
+                      onPressed: _loading ? null : _submit,
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.5),
+                            )
+                          : const Text('Kirish'),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Demo: teacher1 / demo12345',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant.withOpacity(0.7),
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _loginController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }
