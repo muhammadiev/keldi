@@ -38,12 +38,10 @@ class LocationService {
     //     timeLimit: const Duration(seconds: 20),
     //   );
     try {
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 20),
-        ),
-      );
+              final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 20),
+        );
       return LocationResult(true, 'OK', pos);
     } catch (e) {
       return LocationResult(false, "Joylashuvni aniqlab bo'lmadi: $e");
