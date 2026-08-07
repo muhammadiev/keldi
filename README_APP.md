@@ -50,7 +50,7 @@ await Geolocator.getCurrentPosition(
 ```
 
 ## CI
-`codemagic.yaml` builds both APK and AAB on a pinned Flutter 3.24.5, with
+`codemagic.yaml` builds both APK and AAB on a Flutter stable (>= 3.27 required by geolocator 12), with
 pub/gradle caching and a non-blocking analyze step.
 
 ## Notes / next steps

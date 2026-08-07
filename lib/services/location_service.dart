@@ -30,18 +30,15 @@ class LocationService {
     }
 
     // 3. Read position.
-    //
-    // geolocator >= 11 uses `locationSettings:` (below).
-    // If you are on geolocator < 11, replace the call with:
-    //   await Geolocator.getCurrentPosition(
-    //     desiredAccuracy: LocationAccuracy.high,
-    //     timeLimit: const Duration(seconds: 20),
-    //   );
+    // geolocator 12.x uses `desiredAccuracy` (NOT `locationSettings`, which is 13+).
+    // If you upgrade to geolocator 13+, switch to:
+    //   locationSettings: const LocationSettings(
+    //     accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 20))
     try {
-              final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 20),
-        );
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 20),
+      );
       return LocationResult(true, 'OK', pos);
     } catch (e) {
       return LocationResult(false, "Joylashuvni aniqlab bo'lmadi: $e");

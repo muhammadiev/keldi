@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      flutter: stable          # pinned for reproducible builds (was: stable)
+      flutter: stable          # geolocator 12 needs Flutter >= 3.27 (3.24.5 was too old)
     cache:
       cache_paths:
         - $HOME/.pub-cache
