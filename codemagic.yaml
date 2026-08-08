@@ -1,0 +1,30 @@
+workflows:
+  flutter-android:
+    name: Flutter Android (APK + AAB)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable          # geolocator 12 needs Flutter >= 3.27 (3.24.5 was too old)
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/.gradle/caches
+    scripts:
+      - name: Flutter version
+        script: flutter --version
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Analyze (non-blocking)
+        script: flutter analyze || true
+      - name: Build APK
+        script: flutter build apk --release
+      - name: Build App Bundle (AAB)
+        script: flutter build appbundle --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - you@example.com
